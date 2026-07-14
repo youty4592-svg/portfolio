@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>QuickTools Hub | أدواتك الذكية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.2.1/compressor.min.js"></script>
+
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #10b981; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #334155; }
+        select, input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; }
+        button { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h1 style="text-align: center; color: var(--accent);">QuickTools Hub</h1>
+
+<div class="container">
+    <div class="card">
+        <h3>تحويل صيغ الصور</h3>
+        <input type="file" id="convInput" accept="image/*">
+        <select id="convFormat"><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select>
+        <button onclick="convertImage()">تحويل الصورة</button>
+    </div>
+
+    <div class="card">
+        <h3>ضغط الصور</h3>
+        <input type="file" id="compInput" accept="image/*">
+        <select id="compQuality"><option value="0.9">جودة عالية (90%)</option><option value="0.6">متوسطة (60%)</option><option value="0.3">صغيرة (30%)</option></select>
+        <button onclick="compressImage()">ضغط الملف</button>
+    </div>
+
+    <div class="card">
+        <h3>تحويل نص إلى PDF</h3>
+        <textarea id="textInput" placeholder="اكتب نصك العربي هنا..."></textarea>
+        <button onclick="generateArabicPDF()">إنشاء PDF (دعم عربي)</button>
+    </div>
+</div>
+
+<script>
+    // 1. تحويل الصيغ
+    async function convertImage() {
+        const file = document.getElementById('convInput').files[0];
+        if (!file) return alert("اختر صورة");
+        const canvas = document.createElement('canvas');
+        const bitmap = await createImageBitmap(file);
+        canvas.width = bitmap.width; canvas.height = bitmap.height;
+        canvas.getContext('2d').drawImage(bitmap, 0, 0);
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'converted.' + document.getElementById('convFormat').value.split('/')[1];
+            a.click();
+        }, document.getElementById('convFormat').value);
+    }
+
+    // 2. ضغط الصور
+    function compressImage() {
+        const file = document.getElementById('compInput').files[0];
+        new Compressor(file, {
+            quality: parseFloat(document.getElementById('compQuality').value),
+            success(result) {
+                const url = URL.createObjectURL(result);
+                const a = document.createElement('a'); a.href = url; a.download = 'compressed.jpg'; a.click();
+            }
+        });
+    }
+
+    // 3. النص إلى PDF (حل مشكلة العربية)
+    function generateArabicPDF() {
+        const text = document.getElementById('textInput').value;
+        const docDefinition = {
+            content: [ { text: text, direction: 'rtl' } ],
+            defaultStyle: { font: 'Roboto' } // تأكد من استخدام خط يدعم العربية أو الافتراضي
+        };
+        pdfMake.createPdf(docDefinition).download("document.pdf");
+    }
+</script>
+
+</body>
+</html>
+
+
+يشتغل ممناز
